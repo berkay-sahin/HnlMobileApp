@@ -32,28 +32,21 @@ local.properties
 _tests_/
 # node.js
 #
+.gitignore/
 node_modules/
 npm-debug.log
 yarn-error.log
 yarn.lock
-metro.config.js
+_yarn.lock
 .bundle/
-_tests_
-package-lock.json
 .flowconfig
-Gemfile
-Gemfile.lock
-babel.config.js
-app.json
-.watchmanconfig
-.ruby-version
 _package-lock.jsp
 # BUCK
 buck-out/
 \.buckd/
 *.keystore
 !debug.keystore
-
+.buckconfig
 # fastlane
 #
 # It is recommended to not store the screenshots in the git repo. Instead, use fastlane to re-generate the
