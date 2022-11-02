@@ -29,7 +29,7 @@ build/
 local.properties
 *.iml
 *.hprof
-
+_tests_/
 # node.js
 #
 node_modules/
@@ -47,6 +47,7 @@ babel.config.js
 app.json
 .watchmanconfig
 .ruby-version
+_package-lock.jsp
 # BUCK
 buck-out/
 \.buckd/
