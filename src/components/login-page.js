@@ -1,78 +1,153 @@
 import React from "react";
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, Button } from "react-native"
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, Button, Dimensions,ActivityIndicator } from "react-native"
 import { useApi } from '../hooks/api'
-import { Image } from "@rneui/themed";
+import { Image, Input } from "@rneui/themed";
 import jwt from 'jwt-decode'
 import jwtDecode from "jwt-decode";
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import Ionicons from "react-native-vector-icons/Ionicons"
+import { AuthContext, useAuth } from "../context/authContext";
+import { Formik, useFormik } from 'formik'
+import * as Yup from 'yup'
+import { SpinnerContext } from "../context/spinnerContext";
+import Toast from 'react-native-toast-message'
 
 export const LoginPage = ({ navigation }) => {
-  const [infos, setInfos] = React.useState({ userName: "", password: "" });
+  const [infos, setInfos] = React.useState({ email: "", password: "" });
   const api = useApi();
+  const { tkn, setToken } = React.useContext(AuthContext)
+  const{spinner,setLoadSpinner} = React.useContext(SpinnerContext)
 
-  const handleSubmit = async () => {
-    console.log("request : ", infos);
-    const response = await api.post('/Access/login', infos);
+  const LoginSchema = Yup.object().shape({
+    email: Yup.string().required('Zorunlu alan'),
+    password: Yup.string()
+      .min(4, 'Şifre minimum 4 karakter olmalıdır')
+      .max(20, 'Şifre maksimum 20 karakter olmalıdır')
+      .required('Zorunlu alan')
+  });
 
-    console.log("response : ", response);
+  const { handleChange, handleSubmit, handleBlur, values, errors, touched } = useFormik({
+    validationSchema: LoginSchema,
+    initialValues: { ...infos },
+    onSubmit: values => handleLogin(values)
 
+  });
+
+  const showToast = (type,title,detail) => {
+    Toast.show({
+      type: type,
+      text1: title,
+      text2: detail
+    });
+  }
+
+  const handleLogin = async (values) => {
+    setLoadSpinner("flex")
+    const response = await api.post('/Login-User', values);
+   
+    console.log("response.data.data", response.data)
+    const tokenInf = response.data.data.token
+    console.log("tokenInf", tokenInf)
     if (response.status === 200) {
 
-      console.log(response.data)
+      var token = jwt(tokenInf);
 
-      var claims = jwt(response.data);
-      console.log(claims)
-      await deviceStorage("token", response.data);
-      var tokenData = jwtDecode(response.data)
-      var username =
-        tokenData[
-        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
-        ];
+      console.log("token:", token)
+       await deviceStorage("token", token.toString());
+       var tokenData = jwtDecode(tokenInf)
+       var userId=
+       tokenData[
+       "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+       ];
+       console.log("userId:", userId)
+       await deviceStorage("id", userId.toString());
+      setToken(tokenInf)
 
-      await deviceStorage("user", JSON.stringify(username));
-      navigation.navigate("Detail", { Infos: response })
-
+      navigation.navigate("Home", { UserId: userId })
+      setLoadSpinner("none")
     }
     else {
 
-      console.log("a")
+      showToast("error","Hata","Kullanıcı adı ya da şifre yanlış.")
+      setLoadSpinner("none")
     }
 
   };
 
   const deviceStorage = async (key, value) => {
     try {
-      await AsyncStorage.setItem(key, value)
+      const x = await AsyncStorage.setItem(key, value)
+
     } catch (e) {
       //alert(e)
     }
 
   }
 
-  return (
+  const clearDeviceStorage = async () => {
+    try {
+      setToken(null)
+      console.log("tkn", tkn)
+      await AsyncStorage.clear()
 
+    } catch (e) {
+      //alert(e)
+    }
+
+  }
+  return (
+      
     <View style={styles.container} >
+     <Toast/>
       <View style={styles.titleContainer} >
         <Text style={{ fontSize: 69, color: "#2D2A35" }}> Özyer ID</Text>
         <Text style={{ fontSize: 31, color: "#2D2A35" }}> Hoşgeldiniz !</Text>
       </View>
+
       <View style={{ margin: 30 }}>
-        <TextInput
-          placeholder="Email/Username"
-          onChangeText={e => setInfos({ ...infos, userName: e })}
-          style={styles.nameField}
+      <ActivityIndicator size="large" style={{display:spinner}}/>
+        <Input
+          placeholder="Email"
+          leftIcon={{ type: 'ionicons', name: 'mail-outline' }}
+          inputContainerStyle={{ borderBottomWidth: 0 }}
+          containerStyle={styles.nameField}
+          onChangeText={handleChange('email')}
+          onBlur={handleBlur("email")}
+          error={errors.email}
+          touched={touched.email}
+
+        // onChangeText={e => setInfos({ ...infos, userName: e })}
+
         />
-        <TextInput
+        {(errors.email && touched.email) &&
+          <Text style={{ fontSize: 10, color: 'red' }}>{errors.email}</Text>
+        }
+        <Input
           placeholder="Password"
-          onChangeText={e => setInfos({ ...infos, password: e })}
-          style={styles.nameField}
+          secureTextEntry={true}
+          leftIcon={{ type: 'ionicons', name: "lock" }}
+          inputContainerStyle={{ borderBottomWidth: 0 }}
+          containerStyle={styles.nameField}
+          onChangeText={handleChange('password')}
+          onBlur={handleBlur('password')}
+          error={errors.password}
+          touched={touched.password}
+
+
         />
+
+        {(errors.password && touched.password) &&
+          <Text style={{ fontSize: 10, color: 'red' }}>{errors.password}</Text>
+        }
       </View>
+
+
       <View style={{ marginBottom: -30 }}>
-        <TouchableOpacity style={styles.button} onPress={e => handleSubmit()}><Text style={styles.text}>Login</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={e => handleSubmit()}><Text style={styles.text}>QR Login</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={handleSubmit}><Text style={styles.text}>Login</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={handleSubmit}><Text style={styles.text}>QR Login</Text></TouchableOpacity>
       </View>
+
+
     </View>
   );
 }
@@ -81,7 +156,7 @@ const styles = StyleSheet.create({
   container: {
     display: "flex",
     flex: 1,
-
+    minHeight: Dimensions.get('screen').height / 1.1,
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
@@ -96,11 +171,13 @@ const styles = StyleSheet.create({
 
   },
   nameField: {
+    width: 300,
+    height: 50,
     borderWidth: 1.2,
     borderColor: "black",
     borderRadius: 10,
-    width: 300,
-    margin: 10
+    margin: 5
+
 
   },
   button: {
