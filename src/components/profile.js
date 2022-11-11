@@ -8,34 +8,27 @@ import { Formik, useFormik } from 'formik'
 import * as Yup from 'yup'
 import { useApi } from '../hooks/api';
 import Toast from 'react-native-toast-message'
+import {launchImageLibrary} from 'react-native-image-picker'
+
 
 export const Profile = () => {
     const [orientation, setOrientation] = React.useState("PORTRAIT");
-    const [pswrds, setPswrds] = React.useState({ oldPassword: "", newPassword: "", newPasswordRep: "" });
+    const [pswrds, setPswrds] = React.useState({ id: null, oldPassword: "", newPassword: "", repNewPassword: "" });
     const [employee, setEmployee] = React.useState();
     const { tkn, setToken } = React.useContext(AuthContext)
     const [openDia, setOpenDia] = React.useState(false)
+    const [photoModal, setPhotoModal] = React.useState(false);
     const api = useApi();
 
 
-    const getUser = async () => {
-        const userid = await AsyncStorage.getItem("id")
-        var id = parseInt(userid, 10);
-        const response = await api.get('/Get-User', { id });
 
-    
-        if (response.status === 200) {
-
-            setEmployee(response.data.data)
-
-        }
-        else {
-
-            showToast("error", "Hata", "Kullanıcı bilgileri getirilirken hata.")
-
-        }
-
-    };
+    const showToast = (type, title, detail) => {
+        Toast.show({
+            type: type,
+            text1: title,
+            text2: detail
+        });
+    }
 
     const ChangePasswordSchema = Yup.object().shape({
         oldPassword: Yup.string().required('Zorunlu alan'),
@@ -43,7 +36,7 @@ export const Profile = () => {
             .min(4, 'Yeni şifre minimum 4 karakter olmalıdır')
             .max(20, 'Yeni şifre maksimum 20 karakter olmalıdır')
             .required('Zorunlu alan'),
-        newPasswordRep: Yup.string()
+        repNewPassword: Yup.string()
             .oneOf([Yup.ref('newPassword'), null], "Şifre tekrar alanı,yeni şifre ile aynı olmalıdır")
             .required('Zorunlu alan')
     });
@@ -51,7 +44,10 @@ export const Profile = () => {
     const { handleChange, handleSubmit, handleBlur, values, errors, touched } = useFormik({
         validationSchema: ChangePasswordSchema,
         initialValues: { ...pswrds },
-        onSubmit: values => changePassword(values)
+        onSubmit: values => {
+            values.id = employee.id
+            changePassword(values)
+        }
 
     });
 
@@ -68,8 +64,17 @@ export const Profile = () => {
         })
     }, [])
 
-    const changePassword = ( values) => {
-          console.log("şifre değiştirme :", values)
+    const changePassword = async (values) => {
+        var res = await api.post('/changePassword', values)
+        if (res.status === 200) {
+            toogleDia();
+            showToast("error", "Hata", "Kullanıcı adı ya da şifre yanlış.")
+        }
+        else {
+            toogleDia();
+            showToast("error", "Hata", res.toString())
+        }
+        logOut();
     }
     const logOut = async (e) => {
         setToken(null);
@@ -79,21 +84,76 @@ export const Profile = () => {
         setOpenDia(!openDia)
     }
 
+    const getUser = async () => {
+        const userid = await AsyncStorage.getItem("id")
+        var id = parseInt(userid, 10);
+        const response = await api.get('/Get-User', { id });
+
+
+        if (response.status === 200) {
+
+            setEmployee(response.data.data)
+        }
+        else {
+
+            showToast("error", "Hata", "Kullanıcı bilgileri getirilirken hata.")
+
+        }
+
+    };
+    
+
+    const handleChoosePhoto = () => {
+        const options = {
+            noData: true,
+            includeBase64: true
+        }
+        launchImageLibrary(options, response => {
+              
+            if (response.didCancel === true) return;
+            console.log("emp photo : ", response)
+            openPhotoModal()
+            setEmployee({ ...employee, photo: response.assets[0] })
+
+        })
+    }
+
+    const openPhotoModal = () => {
+        setPhotoModal(!photoModal);
+      };
     return (
         <View style={orientation === "PORTRAIT" ? styles.portraitContainer : styles.landscapeContainer} >
             <Toast />
             <View style={orientation === "PORTRAIT" ? styles.portraitCompanyTitle : styles.landscapeCompTitle} >
+
                 <Text style={{ fontSize: 24, fontWeight: "bold" }}>{employee?.companyName}</Text>
                 <Image style={orientation === "PORTRAIT" ? styles.portraitImage : styles.landscapeImage} source={require('./sundia.png')} />
             </View>
+
+
             <View style={orientation === "PORTRAIT" ? styles.portraitPersonalInfos : styles.landsapcePersonalInfos}>
+                <Dialog
+                    isVisible={photoModal}
+                    onBackdropPress={openPhotoModal}
+                >
+                    <Dialog.Title title="Fotoğraf değişimi" />
+                    <Text>Mevcut fotoğrafınızı değiştirmek istediğinize emin misiniz ? </Text>
+                    <Dialog.Actions>
+                        <Dialog.Button title="İptal" onPress={() => openPhotoModal()} />
+                        <Dialog.Button title="Kaydet" onPress={() => console.log("emp photo : ", employee?.photo)} />
+                    </Dialog.Actions>
+                </Dialog>
+
+
+
                 <Avatar
+                    onPress={e => handleChoosePhoto()}
                     size={140}
                     avatarStyle={{
                         borderWidth: 2, borderColor: "#2D2A35", shadowColor: 'black',
                     }}
                     rounded
-                    source={require('./rs.jpg')}
+                    source={employee?.photo}
 
                 />
                 <Text style={{ margin: 5, fontSize: 16 }}>{employee?.title}</Text>
@@ -140,7 +200,7 @@ export const Profile = () => {
                 onBackdropPress={e => toogleDia(e)}
             >
                 <Dialog.Title title="Şifre Değiştirme" />
-                <Text>Yeni şifrenizi girin</Text>
+                <Text>Yeni şifrenizi girin. (Bu işlem sonucunda giriş sayfasına yönlendirileceksiniz). </Text>
                 <Input
                     placeholder="Eski Şifre"
                     onChangeText={handleChange('oldPassword')}
@@ -165,14 +225,14 @@ export const Profile = () => {
                 }
                 <Input
                     placeholder="Yeni Şifre Tekrar"
-                    onChangeText={handleChange('newPasswordRep')}
-                    onBlur={handleBlur('newPasswordRep')}
-                    error={errors.newPasswordRep}
-                    touched={touched.newPasswordRep}
+                    onChangeText={handleChange('repNewPassword')}
+                    onBlur={handleBlur('repNewPassword')}
+                    error={errors.repNewPassword}
+                    touched={touched.repNewPassword}
 
                 />
-                {(errors.newPasswordRep && touched.newPasswordRep) &&
-                    <Text style={{ fontSize: 10, color: 'red' }}>{errors.newPasswordRep}</Text>
+                {(errors.repNewPassword && touched.repNewPassword) &&
+                    <Text style={{ fontSize: 10, color: 'red' }}>{errors.repNewPassword}</Text>
                 }
                 <Dialog.Actions>
                     <Dialog.Button title="İptal" onPress={e => toogleDia(e)} />
@@ -189,8 +249,8 @@ const styles = StyleSheet.create({
     portraitContainer: {
         display: "flex",
         flex: 1,
-        minHeight: Dimensions.get('screen').height,
-        marginTop: -130,
+
+        marginTop: -40,
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",

@@ -45,8 +45,7 @@ export const LoginPage = ({ navigation }) => {
     setLoadSpinner("flex")
     const response = await api.post('/Login-User', values);
    
-    console.log("response.data.data", response.data)
-    const tokenInf = response.data.data.token
+    const tokenInf = response.data?.data.token
     console.log("tokenInf", tokenInf)
     if (response.status === 200) {
 
@@ -105,6 +104,7 @@ export const LoginPage = ({ navigation }) => {
       </View>
 
       <View style={{ margin: 30 }}>
+      
       <ActivityIndicator size="large" style={{display:spinner}}/>
         <Input
           placeholder="Email"

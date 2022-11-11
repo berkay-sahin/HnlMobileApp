@@ -13,29 +13,17 @@ export const Home = ({ route }) => {
     const api = useApi();
 
    
-    const getUser = async () => {
-        const userid = await AsyncStorage.getItem("id")
-        var id = parseInt(userid, 10);
-        const response = await api.get('/Get-User', { id });
 
-        console.log("ffff", response.data)
-
-
-        if (response.status === 200) {
-
-            setEmployee(response.data.data)
-
-        }
-        else {
-
-            showToast("error", "Hata", "Kullanıcı bilgileri getirilirken hata.")
-
-        }
-
-    };
+    const showToast = (type,title,detail) => {
+        Toast.show({
+          type: type,
+          text1: title,
+          text2: detail
+        });
+      }
 
     React.useEffect(() => {
-        getUser()
+      
         Dimensions.addEventListener('change', ({ window: { width, height } }) => {
             if (width < height) {
                 setOrientation("PORTRAIT")
@@ -43,7 +31,9 @@ export const Home = ({ route }) => {
                 setOrientation("LANDSCAPE")
 
             }
+           
         })
+         getUser()
     }, [])
 
 
@@ -58,7 +48,23 @@ export const Home = ({ route }) => {
         return card.getFormattedString();
 
     }
+    const getUser = async () => {
+        const userid = await AsyncStorage.getItem("id")
+        var id = parseInt(userid, 10);
+        const response = await api.get('/Get-User', { id });
 
+        if (response.status === 200) {
+
+            setEmployee(response.data.data)
+
+        }
+        else {
+
+            showToast("error", "Hata", "Kullanıcı yok.")
+
+        }
+
+    };
 
     return (
         <View style={orientation === "PORTRAIT" ? styles.portraitContainer : styles.landscapeContainer} >

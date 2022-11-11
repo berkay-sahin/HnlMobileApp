@@ -14,11 +14,10 @@ export const Route = () => {
     tkn !== null ? 
     <NavigationContainer>
        <Tab.Navigator
-         initialRouteName='Home'
+         initialRouteName= 'Home'
            screenOptions={({ route }) => ({
             tabBarIconStyle: { display: "none" },
             headerShown:false,
-            
             tabBarStyle:{display: tkn===null ? "none" :"flex"},
             tabBarActiveBackgroundColor:"#2D2A35",
             tabBarInactiveBackgroundColor:"#2D2A35",
@@ -44,7 +43,7 @@ export const Route = () => {
       </Tab.Navigator>
     </NavigationContainer>  : <NavigationContainer>
        <Tab.Navigator
-         
+         initialRouteName='Login'
            screenOptions={({ route }) => ({
             tabBarIconStyle: { display: "none" },
             headerShown:false,
