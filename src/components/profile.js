@@ -170,10 +170,10 @@ export const Profile = () => {
                         borderWidth: 2, borderColor: "#2D2A35", shadowColor: 'black',
                     }}
                     rounded
-                    source={ employee?.photo ? {uri: 'data:image/png;base64,' + employee?.photo } : require('./user.png')}
-                       
+                    source={ employee?.photo ? {uri: 'data:image/png;base64,' + employee?.photo } : require('./defUser.png')}
+                    
                 > 
-                 <Avatar.Accessory onPress={e => handleChoosePhoto()} size={25}/>
+                 <Avatar.Accessory onPress={e => handleChoosePhoto()} size={25} style={{marginRight:15}}/>
                 </Avatar>
                 <Text style={{ margin: 5, fontSize: 16 }}>{employee?.title}</Text>
                 <Text style={{ fontWeight: "bold", fontSize: 20 }}> {employee?.firstName} {employee?.lastName}</Text>

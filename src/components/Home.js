@@ -96,7 +96,7 @@ export const Home = ({ route }) => {
                             borderWidth: 2, borderColor: "#2D2A35", shadowColor: 'black',
                         }}
                         rounded
-                        source={employee?.photo ? { uri: 'data:image/png;base64,' + employee?.photo } : require('./user.png')}
+                        source={employee?.photo ? { uri: 'data:image/png;base64,' + employee?.photo } : require('./defUser.png')}
 
                     />
                     <Text style={{ margin: 5, fontSize: 16 }}>{employee?.title}</Text>
@@ -107,7 +107,7 @@ export const Home = ({ route }) => {
                 </View>
                 <View style={orientation === "PORTRAIT" ? styles.portraitQrView : styles.landscapeQrView}>
                     <QRCode
-                        logo={require('./rs.jpg')}
+                        
                         logoSize={24}
                         size={180}
                         value={generateCard()}
