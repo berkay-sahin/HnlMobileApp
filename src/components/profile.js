@@ -18,9 +18,10 @@ export const Profile = () => {
     const { tkn, setToken } = React.useContext(AuthContext)
     const [openDia, setOpenDia] = React.useState(false)
     const [photoModal, setPhotoModal] = React.useState(false);
+    const [photo, setPhoto] = React.useState({photo:null,id:null});
     const api = useApi();
 
-
+    const Picture = 'data:image/jpeg;base64'+employee?.photo
 
     const showToast = (type, title, detail) => {
         Toast.show({
@@ -64,6 +65,7 @@ export const Profile = () => {
         })
     }, [])
 
+
     const changePassword = async (values) => {
         var res = await api.post('/changePassword', values)
         if (res.status === 200) {
@@ -88,7 +90,7 @@ export const Profile = () => {
         const userid = await AsyncStorage.getItem("id")
         var id = parseInt(userid, 10);
         const response = await api.get('/Get-User', { id });
-
+        
 
         if (response.status === 200) {
 
@@ -103,7 +105,8 @@ export const Profile = () => {
     };
     
 
-    const handleChoosePhoto = () => {
+    const handleChoosePhoto = async () => {
+        const userId = await AsyncStorage.getItem("id")
         const options = {
             noData: true,
             includeBase64: true
@@ -111,14 +114,28 @@ export const Profile = () => {
         launchImageLibrary(options, response => {
               
             if (response.didCancel === true) return;
-            console.log("emp photo : ", response)
-            openPhotoModal()
-            setEmployee({ ...employee, photo: response.assets[0] })
+            tooglePhotoModal()
+            setPhoto({ ...photo, photo: response.assets[0].base64 ,id:userId})
 
         })
+       
     }
 
-    const openPhotoModal = () => {
+    const updatePhoto = async () => {
+   
+        const response = await api.post("/updatephoto",photo)
+       if(response.status === 200) {
+        tooglePhotoModal()
+        showToast("success","İşlem Başarılı","Fotoğrafınız başarıyla güncellendi.")
+       }
+       else {
+        tooglePhotoModal()
+        showToast("error","Hata",response.message)
+       }
+       getUser()
+    }
+    
+    const tooglePhotoModal = () => {
         setPhotoModal(!photoModal);
       };
     return (
@@ -127,35 +144,37 @@ export const Profile = () => {
             <View style={orientation === "PORTRAIT" ? styles.portraitCompanyTitle : styles.landscapeCompTitle} >
 
                 <Text style={{ fontSize: 24, fontWeight: "bold" }}>{employee?.companyName}</Text>
-                <Image style={orientation === "PORTRAIT" ? styles.portraitImage : styles.landscapeImage} source={require('./sundia.png')} />
+                <Image style={orientation === "PORTRAIT" ? styles.portraitImage : styles.landscapeImage} source={require('./SundiaHardalPng.png')} />
             </View>
 
 
             <View style={orientation === "PORTRAIT" ? styles.portraitPersonalInfos : styles.landsapcePersonalInfos}>
                 <Dialog
                     isVisible={photoModal}
-                    onBackdropPress={openPhotoModal}
+                    onBackdropPress={tooglePhotoModal}
                 >
                     <Dialog.Title title="Fotoğraf değişimi" />
                     <Text>Mevcut fotoğrafınızı değiştirmek istediğinize emin misiniz ? </Text>
                     <Dialog.Actions>
-                        <Dialog.Button title="İptal" onPress={() => openPhotoModal()} />
-                        <Dialog.Button title="Kaydet" onPress={() => console.log("emp photo : ", employee?.photo)} />
+                        <Dialog.Button title="İptal" onPress={() => tooglePhotoModal()} />
+                        <Dialog.Button title="Kaydet" onPress={() => updatePhoto() } />
                     </Dialog.Actions>
                 </Dialog>
 
 
 
                 <Avatar
-                    onPress={e => handleChoosePhoto()}
+                   
                     size={140}
                     avatarStyle={{
                         borderWidth: 2, borderColor: "#2D2A35", shadowColor: 'black',
                     }}
                     rounded
-                    source={employee?.photo}
-
-                />
+                    source={ employee?.photo ? {uri: 'data:image/png;base64,' + employee?.photo } : require('./user.png')}
+                       
+                > 
+                 <Avatar.Accessory onPress={e => handleChoosePhoto()} size={25}/>
+                </Avatar>
                 <Text style={{ margin: 5, fontSize: 16 }}>{employee?.title}</Text>
                 <Text style={{ fontWeight: "bold", fontSize: 20 }}> {employee?.firstName} {employee?.lastName}</Text>
                 <Text style={{ margin: 5 }}> {employee?.email}</Text>
@@ -295,10 +314,10 @@ const styles = StyleSheet.create({
         margin: 31
     },
     portraitImage: {
-        height: 100,
-        width: 100,
+        height: 200,
+        width: 200,
         margin: 10,
-
+        margin:-30
     },
     landscapeImage: {
         height: 100,

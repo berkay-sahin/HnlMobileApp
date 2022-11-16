@@ -46,19 +46,17 @@ export const LoginPage = ({ navigation }) => {
     const response = await api.post('/Login-User', values);
    
     const tokenInf = response.data?.data.token
-    console.log("tokenInf", tokenInf)
+    
     if (response.status === 200) {
-
       var token = jwt(tokenInf);
-
-      console.log("token:", token)
+      
        await deviceStorage("token", token.toString());
        var tokenData = jwtDecode(tokenInf)
        var userId=
        tokenData[
        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
        ];
-       console.log("userId:", userId)
+       
        await deviceStorage("id", userId.toString());
       setToken(tokenInf)
 
@@ -82,18 +80,7 @@ export const LoginPage = ({ navigation }) => {
     }
 
   }
-
-  const clearDeviceStorage = async () => {
-    try {
-      setToken(null)
-      console.log("tkn", tkn)
-      await AsyncStorage.clear()
-
-    } catch (e) {
-      //alert(e)
-    }
-
-  }
+  
   return (
       
     <View style={styles.container} >

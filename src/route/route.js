@@ -5,13 +5,15 @@ import {Profile} from '../components/profile'
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { AuthContext } from '../context/authContext';
+import jwt from 'jwt-decode'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const Route = () => {
   const Tab = createBottomTabNavigator();
   const {tkn,setToken} = React.useContext(AuthContext)
-
+ 
   return (
-    tkn !== null ? 
+    tkn !== null  ? 
     <NavigationContainer>
        <Tab.Navigator
          initialRouteName= 'Home'
