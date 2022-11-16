@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions } from "react-native"
+import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions, ScrollView, RefreshControl } from "react-native"
 import QRCode from 'react-native-qrcode-svg';
 import { Avatar, Card, SpeedDial } from '@rneui/themed';
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -10,20 +10,25 @@ import Toast from 'react-native-toast-message'
 export const Home = ({ route }) => {
     const [orientation, setOrientation] = React.useState("PORTRAIT");
     const [employee, setEmployee] = React.useState();
+    const [refresh, setRefresh] = React.useState(false);
     const api = useApi();
 
-   
+    const pullRefresh = async () => {
+        setRefresh(true)
+        await getUser()
+        setRefresh(false)
+    }
 
-    const showToast = (type,title,detail) => {
+    const showToast = (type, title, detail) => {
         Toast.show({
-          type: type,
-          text1: title,
-          text2: detail
+            type: type,
+            text1: title,
+            text2: detail
         });
-      }
+    }
 
     React.useEffect(() => {
-      
+
         Dimensions.addEventListener('change', ({ window: { width, height } }) => {
             if (width < height) {
                 setOrientation("PORTRAIT")
@@ -31,15 +36,15 @@ export const Home = ({ route }) => {
                 setOrientation("LANDSCAPE")
 
             }
-           
+
         })
-         getUser()
+        getUser()
     }, [])
 
 
     const generateCard = () => {
         var card = vCard();
-        card.cellPhone = employee?.phone,
+            card.cellPhone = employee?.phone,
             card.firstName = employee?.firstName,
             card.lastName = employee?.lastName,
             card.organization = employee?.companyName,
@@ -68,36 +73,48 @@ export const Home = ({ route }) => {
 
     return (
         <View style={orientation === "PORTRAIT" ? styles.portraitContainer : styles.landscapeContainer} >
-            <Toast />
-            <View style={orientation === "PORTRAIT" ? styles.portraitCompanyTitle : styles.landscapeCompTitle} >
-                <Text style={{ fontSize: 24, fontWeight: "bold" }}>{employee?.companyName}</Text>
-                <Image style={orientation === "PORTRAIT" ? styles.portraitImage : styles.landscapeImage} source={require('./sundia.png')} />
-            </View>
-            <View style={orientation === "PORTRAIT" ? styles.portraitPersonalInfos : styles.landsapcePersonalInfos}>
-                <Avatar
+            <ScrollView
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refresh}
+                        onRefresh={() => pullRefresh()}
+                    />
 
-                    size={140}
-                    avatarStyle={{
-                        borderWidth: 2, borderColor: "#2D2A35", shadowColor: 'black',
-                    }}
-                    rounded
-                    source={require('./rs.jpg')}
+                }
+            >
+                <Toast />
 
-                />
-                <Text style={{ margin: 5, fontSize: 16 }}>{employee?.title}</Text>
-                <Text style={{ fontWeight: "bold", fontSize: 20 }}> {employee?.firstName} {employee?.lastName}</Text>
-                <Text style={{ margin: 5 }}> {employee?.email}</Text>
-                <Text style={{}}> {employee?.phone}</Text>
+                <View style={orientation === "PORTRAIT" ? styles.portraitCompanyTitle : styles.landscapeCompTitle} >
+                    <Text style={{ fontSize: 24, fontWeight: "bold" }}>{employee?.companyName}</Text>
+                    <Image style={orientation === "PORTRAIT" ? styles.portraitImage : styles.landscapeImage} source={require('./SundiaHardalPng.png')} />
+                </View>
+                <View style={orientation === "PORTRAIT" ? styles.portraitPersonalInfos : styles.landsapcePersonalInfos}>
+                    <Avatar
 
-            </View>
-            <View style={orientation === "PORTRAIT" ? styles.portraitQrView : styles.landscapeQrView}>
-                <QRCode
-                    size={180}
-                    value={generateCard()}
-                />
+                        size={140}
+                        avatarStyle={{
+                            borderWidth: 2, borderColor: "#2D2A35", shadowColor: 'black',
+                        }}
+                        rounded
+                        source={employee?.photo ? { uri: 'data:image/png;base64,' + employee?.photo } : require('./user.png')}
 
-            </View>
+                    />
+                    <Text style={{ margin: 5, fontSize: 16 }}>{employee?.title}</Text>
+                    <Text style={{ fontWeight: "bold", fontSize: 20 }}> {employee?.firstName} {employee?.lastName}</Text>
+                    <Text style={{ margin: 5 }}> {employee?.email}</Text>
+                    <Text style={{}}> {employee?.phone}</Text>
 
+                </View>
+                <View style={orientation === "PORTRAIT" ? styles.portraitQrView : styles.landscapeQrView}>
+                    <QRCode
+                        logo={require('./rs.jpg')}
+                        logoSize={24}
+                        size={180}
+                        value={generateCard()}
+                    />
+
+                </View>
+            </ScrollView>
         </View>
 
     );
@@ -110,7 +127,8 @@ const styles = StyleSheet.create({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#EAEAEA"
+        backgroundColor: "#EAEAEA",
+
 
     },
     landscapeContainer: {
@@ -127,6 +145,7 @@ const styles = StyleSheet.create({
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
+        marginTop: 25
     },
     landscapeCompTitle: {
         display: "flex",
@@ -150,9 +169,10 @@ const styles = StyleSheet.create({
         margin: 31
     },
     portraitImage: {
-        height: 100,
-        width: 100,
-        margin: 10,
+        height: 200,
+        width: 200,
+        marginTop: -45,
+        marginBottom: -45
 
     },
     landscapeImage: {
@@ -162,13 +182,13 @@ const styles = StyleSheet.create({
 
     },
     portraitQrView: {
-        height: 220,
-        width: 220,
+        height: 200,
+        width: 200,
         shadowColor: 'black',
         shadowOpacity: 0,
         shadowOffset: { width: 1, height: 1 },
         shadowRadius: 10,
-        elevation: 15,
+        elevation: 5,
         backgroundColor: "white",
         margin: 10,
         borderRadius: 10,
