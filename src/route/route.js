@@ -11,9 +11,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export const Route = () => {
   const Tab = createBottomTabNavigator();
   const {tkn,setToken} = React.useContext(AuthContext)
- 
+  
+ var token = tkn ? jwt(tkn) : null
+ var tokenExp = new Date;
+ tokenExp = token?.exp*1000
+
+
   return (
-    tkn !== null  ? 
+    tkn !== null && tokenExp > Date.now() ? 
     <NavigationContainer>
        <Tab.Navigator
          initialRouteName= 'Home'

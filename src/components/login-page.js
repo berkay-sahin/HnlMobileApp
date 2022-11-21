@@ -41,6 +41,7 @@ export const LoginPage = ({ navigation }) => {
     });
   }
 
+
   const handleLogin = async (values) => {
     setLoadSpinner("flex")
     const response = await api.post('/Login-User', values);
@@ -50,7 +51,7 @@ export const LoginPage = ({ navigation }) => {
     if (response.status === 200) {
       var token = jwt(tokenInf);
       
-       await deviceStorage("token", token.toString());
+       await deviceStorage("token", tokenInf);
        var tokenData = jwtDecode(tokenInf)
        var userId=
        tokenData[
@@ -59,13 +60,13 @@ export const LoginPage = ({ navigation }) => {
        
        await deviceStorage("id", userId.toString());
       setToken(tokenInf)
-
+         console.log("response", response)
       navigation.navigate("Home", { UserId: userId })
       setLoadSpinner("none")
     }
     else {
-
-      showToast("error","Hata","Kullanıcı adı ya da şifre yanlış.")
+      console.log("response", response)
+      showToast("error","Hata",response.message ? response.message : "Giriş yaparken hata oluştu" )
       setLoadSpinner("none")
     }
 

@@ -12,7 +12,7 @@ const App = () => {
   React.useEffect(()=>{
     AsyncStorage.getItem("token").then((tk)=>{
      
-      setTkn(tk);
+      setTkn(tk.toString());
     }).catch(er=>{
       console.log("Error: ",er);
     })
