@@ -123,7 +123,7 @@ export const Profile = () => {
 
     const updatePhoto = async () => {
    
-        const response = await api.post("/updatephoto",photo)
+        const response = await api.post("/OzyerIdUser/updatephoto",photo)
        if(response.status === 200) {
         tooglePhotoModal()
         showToast("success","İşlem Başarılı","Fotoğrafınız başarıyla güncellendi.")
