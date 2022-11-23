@@ -67,7 +67,7 @@ export const Profile = () => {
 
 
     const changePassword = async (values) => {
-        var res = await api.post('/changePassword', values)
+        var res = await api.post('/OzyerIdUser/changePassword', values)
         if (res.status === 200) {
             toogleDia();
             showToast("error", "Hata", "Kullanıcı adı ya da şifre yanlış.")
