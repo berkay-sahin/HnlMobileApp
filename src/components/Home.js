@@ -13,6 +13,7 @@ export const Home = ({ route }) => {
     const [refresh, setRefresh] = React.useState(false);
     const api = useApi();
 
+
     const pullRefresh = async () => {
         setRefresh(true)
         await getUser()
@@ -44,19 +45,21 @@ export const Home = ({ route }) => {
 
     const generateCard = () => {
         var card = vCard();
-            card.cellPhone = employee?.phone,
-            card.firstName = employee?.firstName,
-            card.lastName = employee?.lastName,
-            card.organization = employee?.companyName,
-            card.workEmail = employee?.email,
-            card.title = employee?.title
+            card.workPhone = "+90 (252) 614 0331",
+            card.firstName = "Melden Group",
+            card.organization = "Melden Group",
+            card.note = "note",
+            card.email =  "email",
+            card.homeAddress = "homeAddress",
+            card.workAddress = "workAddress",
+            card.workEmail = "workemail"
         return card.getFormattedString();
 
     }
     const getUser = async () => {
         const userid = await AsyncStorage.getItem("id")
         var id = parseInt(userid, 10);
-        const response = await api.get('/Get-User', { id });
+        const response = await api.get('/OzyerIdUser/Get-User', { id });
 
         if (response.status === 200) {
 

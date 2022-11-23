@@ -11,7 +11,7 @@ import { Formik, useFormik } from 'formik'
 import * as Yup from 'yup'
 import { SpinnerContext } from "../context/spinnerContext";
 import Toast from 'react-native-toast-message'
-
+import axios from 'axios'
 export const LoginPage = ({ navigation }) => {
   const [infos, setInfos] = React.useState({ email: "", password: "" });
   const api = useApi();
@@ -44,9 +44,22 @@ export const LoginPage = ({ navigation }) => {
 
   const handleLogin = async (values) => {
     setLoadSpinner("flex")
-    const response = await api.post('/Login-User', values);
+    const response = await api.post('/OzyerIdUser/login-user', values);
    
-    const tokenInf = response.data?.data.token
+    
+  //  var response= await  axios.post('https://api.hanelgroup.com/api/hanel/v1/auth/login', {
+  //     userName: "admin",
+  //     password: "asdf"
+  //   })
+  //     .then(function (response) {
+  //         console.log("res : ",response);
+  //         setLoadSpinner("none")
+  //     })
+  //     .catch(function (error) {
+  //         console.log("err :",error);
+  //         setLoadSpinner("none")
+  //     });
+      const tokenInf = response.data?.data.token
     
     if (response.status === 200) {
       var token = jwt(tokenInf);

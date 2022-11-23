@@ -11,14 +11,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export const Route = () => {
   const Tab = createBottomTabNavigator();
   const {tkn,setToken} = React.useContext(AuthContext)
-  
+
  var token = tkn ? jwt(tkn) : null
  var tokenExp = new Date;
  tokenExp = token?.exp*1000
 
 
   return (
-    tkn !== null && tokenExp > Date.now() ? 
+    tkn !== null || tokenExp > Date.now() ? 
     <NavigationContainer>
        <Tab.Navigator
          initialRouteName= 'Home'
@@ -48,7 +48,9 @@ export const Route = () => {
         <Tab.Screen name="Profil" component={Profile}  /> 
        
       </Tab.Navigator>
-    </NavigationContainer>  : <NavigationContainer>
+    </NavigationContainer>  :
+    
+    <NavigationContainer>
        <Tab.Navigator
          initialRouteName='Login'
            screenOptions={({ route }) => ({
@@ -66,8 +68,6 @@ export const Route = () => {
             
         })}
        
-          
- 
       >
         
         <Tab.Screen  name="Login"component={LoginPage}  options={{

@@ -89,7 +89,7 @@ export const Profile = () => {
     const getUser = async () => {
         const userid = await AsyncStorage.getItem("id")
         var id = parseInt(userid, 10);
-        const response = await api.get('/Get-User', { id });
+        const response = await api.get('/OzyerIdUser/Get-User', { id });
         
 
         if (response.status === 200) {
