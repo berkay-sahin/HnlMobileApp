@@ -18,7 +18,7 @@ export const Route = () => {
 
 
   return (
-    tkn !== null || tokenExp > Date.now() ? 
+    tkn !== null  ? 
     <NavigationContainer>
        <Tab.Navigator
          initialRouteName= 'Home'

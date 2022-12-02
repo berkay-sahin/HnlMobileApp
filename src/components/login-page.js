@@ -46,20 +46,7 @@ export const LoginPage = ({ navigation }) => {
     setLoadSpinner("flex")
     const response = await api.post('/OzyerIdUser/login-user', values);
    
-    
-  //  var response= await  axios.post('https://api.hanelgroup.com/api/hanel/v1/auth/login', {
-  //     userName: "admin",
-  //     password: "asdf"
-  //   })
-  //     .then(function (response) {
-  //         console.log("res : ",response);
-  //         setLoadSpinner("none")
-  //     })
-  //     .catch(function (error) {
-  //         console.log("err :",error);
-  //         setLoadSpinner("none")
-  //     });
-      const tokenInf = response.data?.data.token
+    const tokenInf = response.data?.data.token
     
     if (response.status === 200) {
       var token = jwt(tokenInf);
@@ -79,7 +66,7 @@ export const LoginPage = ({ navigation }) => {
     }
     else {
       console.log("response", response)
-      showToast("error","Hata",response.message ? response.message : "Giriş yaparken hata oluştu" )
+      showToast("error","Hata",response?.response?.data  )
       setLoadSpinner("none")
     }
 
